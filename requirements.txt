@@ -1,0 +1,4 @@
+eth-ape
+silverback
+slack_sdk
+setuptools

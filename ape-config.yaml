@@ -1,0 +1,9 @@
+name: dHEDGE-Bots
+plugins:
+  - name: alchemy
+  - name: base
+
+ethereum:
+  default_network: base
+  base:
+    default_provider: alchemy
