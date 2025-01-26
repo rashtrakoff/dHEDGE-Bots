@@ -1,18 +1,12 @@
 import os
 import logging
+import sys
 from datetime import datetime
 
 from ape import Contract, chain, networks
 from ape.types import ContractLog
 from silverback import SilverbackBot, StateSnapshot
 from slack_sdk import WebClient
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S"
-)
 
 # Initialize the bot
 bot = SilverbackBot()
@@ -45,6 +39,7 @@ with networks.parse_network_choice("base:mainnet:alchemy") as provider:
 
 @bot.on_startup()
 def bot_startup(_):
+    set_logging_settings()
     logging.info(f"Skew bot started at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
     # 1. Initialize slack client.
@@ -103,6 +98,27 @@ def on_funding_fees_settled(log: ContractLog):
                 f"Error sending slack message: {response.get('error', 'Unknown error')}"
             )
 
+def set_logging_settings():
+    # Configure logging
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+
+    # Create handlers
+    stdout_handler = logging.StreamHandler(sys.stdout)
+    stderr_handler = logging.StreamHandler(sys.stderr)
+
+    # Set log levels
+    stdout_handler.setLevel(logging.INFO)
+    stderr_handler.setLevel(logging.ERROR)
+
+    # Create formatters and add them to the handlers
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+    stdout_handler.setFormatter(formatter)
+    stderr_handler.setFormatter(formatter)
+
+    # Add handlers to the logger
+    logger.addHandler(stdout_handler)
+    logger.addHandler(stderr_handler)
 
 def get_current_skew_percent():
     return round(VIEWER_CONTRACT.getMarketSkewPercentage() / 1e16, 4)
