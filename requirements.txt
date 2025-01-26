@@ -2,3 +2,6 @@ eth-ape
 silverback
 slack_sdk
 setuptools
+ape-base
+ape-alchemy
+
