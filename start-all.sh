@@ -6,10 +6,10 @@ pm2 start ecosystem.config.js
 # Add a cron job to run the check_liquidatable_positions script daily at midnight
 
 # Ensure the logs directory exists
-mkdir -p ~/Projects/logs
+mkdir -p ./logs
 
 # Define the cron job command
-CRON_JOB="0 0 * * * ~/Projects/dHEDGE-Bots/.venv/bin/ape run check_liquidatable_positions --network base:mainnet:alchemy >> ~/Projects/logs/check_liquidatable_positions.log 2>&1"
+CRON_JOB="0 0 * * * ./.venv/bin/ape run check_liquidatable_positions --network base:mainnet:alchemy >> ./logs/check_liquidatable_positions.log 2>&1"
 
 # Check if the cron job already exists and add it if it doesn't
 (crontab -l 2>/dev/null | grep -F "$CRON_JOB") || (crontab -l 2>/dev/null; echo "$CRON_JOB") | crontab -
