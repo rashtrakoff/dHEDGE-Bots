@@ -29,8 +29,8 @@ VAULT_CONTRACT_ADDRESS = (
     "0x95Fa1ddc9a78273f795e67AbE8f1Cd2Cd39831fF"  # Vault contract address on Base
 )
 THRESHOLD_EMOJI = {
-    "normal": ":green_circle:",
-    "warning": ":yellow_circle:",
+    "normal": ":large_green_circle:",
+    "warning": ":large_yellow_circle:",
     "critical": ":red_circle:",
 }
 DIRECTION_EMOJI = {
@@ -85,7 +85,7 @@ def on_funding_fees_settled(log: ContractLog):
             direction = "decreased"
 
         # 3.1 Determine the current skew status and send a slack message accordingly.
-        message = f"{THRESHOLD_EMOJI[range]} {DIRECTION_EMOJI[direction]} Market skew changed to {current_skew_percent}%"
+        message = f"{THRESHOLD_EMOJI[range]} {DIRECTION_EMOJI[direction]} Market skew at {current_skew_percent}%"
 
         # 3.2 Update the skew in the bot state only when skew percentage has changed
         #    beyond a certain threshold.
