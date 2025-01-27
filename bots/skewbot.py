@@ -12,7 +12,7 @@ from slack_sdk import WebClient
 bot = SilverbackBot()
 
 # Global variables
-SLACK_CHANNEL = os.environ["SKEWBOT_SLACK_CHANNEL"]
+SLACK_CHANNEL = os.environ["FM_BOT_SLACK_CHANNEL"]
 WARNING_THRESHOLD = 5  # 5% skew difference
 CRITICAL_THRESHOLD = 10  # 10% skew difference
 STEP_SIZE = 1  # 1% skew difference
