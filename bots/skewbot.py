@@ -40,7 +40,8 @@ with networks.parse_network_choice("base:mainnet:alchemy") as provider:
 @bot.on_startup()
 def bot_startup(_):
     set_logging_settings()
-    logging.info(f"Skew bot started at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    logging.info(f"Skew bot started at {datetime.now().strftime('%d-%m-%Y %H:%M:%S')}")
+    logging.info(f"Slack bot alerts channel: {SLACK_CHANNEL}")
 
     # 1. Initialize slack client.
     bot.state.slack_client = WebClient(token=os.environ["SLACK_BOT_TOKEN"])
