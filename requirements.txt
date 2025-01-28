@@ -4,4 +4,5 @@ slack_sdk
 setuptools
 ape-base
 ape-alchemy
+python-dotenv
 

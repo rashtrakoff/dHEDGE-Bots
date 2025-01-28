@@ -2,6 +2,7 @@ import os
 import logging
 import sys
 from datetime import datetime
+from dotenv import load_dotenv
 
 from ape import Contract, chain, networks
 from ape.types import ContractLog
@@ -12,7 +13,7 @@ from slack_sdk import WebClient
 bot = SilverbackBot()
 
 # Global variables
-SLACK_CHANNEL = os.environ["FM_BOT_SLACK_CHANNEL"]
+SLACK_CHANNEL = os.getenv("FM_BOT_SLACK_CHANNEL")
 WARNING_THRESHOLD = 5  # 5% skew difference
 CRITICAL_THRESHOLD = 10  # 10% skew difference
 STEP_SIZE = 1  # 1% skew difference
@@ -44,7 +45,7 @@ def bot_startup(_):
     logging.info(f"Slack bot alerts channel: {SLACK_CHANNEL}")
 
     # 1. Initialize slack client.
-    bot.state.slack_client = WebClient(token=os.environ["SLACK_BOT_TOKEN"])
+    bot.state.slack_client = WebClient(token=os.getenv("SLACK_BOT_TOKEN"))
 
     # 2. Get the current skew from the contract.
     bot.state.skew = get_current_skew_percent()
