@@ -87,7 +87,7 @@ def get_liquidatable_positions():
         if liquidation_statuses[i]
     ]
 
-    logging.info(f"Found {len(positions)} liquidatable positions")
+    logging.info(f"Found {len(liquidatable_positions)} liquidatable positions")
 
     return liquidatable_positions
 
