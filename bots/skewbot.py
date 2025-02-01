@@ -70,7 +70,7 @@ def on_funding_fees_settled(log: ContractLog):
             range = "critical"
         elif (
             abs_current_skew > WARNING_THRESHOLD
-            and current_skew_percent < CRITICAL_THRESHOLD
+            and abs_current_skew < CRITICAL_THRESHOLD
         ):
             range = "warning"
         else:
