@@ -82,8 +82,10 @@ def on_funding_fees_settled(log: ContractLog):
             direction = "decreased"
 
 
+        skew_bias = "long" if current_skew_percent < 0 else "short"
+
         # 3.1 Determine the current skew status and send a slack message accordingly.
-        message = f"{THRESHOLD_EMOJI[range]} {DIRECTION_EMOJI[direction]} Market skew at {current_skew_percent:.2f}%"
+        message = f"{THRESHOLD_EMOJI[range]} {DIRECTION_EMOJI[direction]} Market skew at {current_skew_percent:.2f} {skew_bias}%"
         logging.info(f"Current skew: {current_skew_percent}%")
 
         # 3.2 Update the skew in the bot state only when skew percentage has changed
