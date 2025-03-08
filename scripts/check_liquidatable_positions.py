@@ -31,9 +31,9 @@ with networks.parse_network_choice("base:mainnet:alchemy") as provider:
 
 # Main script
 def main():
-    positions = get_liquidatable_positions()
+    positions, total_positions = get_liquidatable_positions()
 
-    text = f"Checked all positions and found {len(positions)} liquidatable positions"
+    text = f"Checked {total_positions} positions and found {len(positions)} liquidatable positions"
     formatted_positions = " ".join(map(str, positions))
 
     if len(positions) > 0:
@@ -51,6 +51,7 @@ def get_liquidatable_positions():
     total_positions = LEVERAGE_MODULE.totalSupply()
     logging.info(f"Total positions: {total_positions}")
 
+    # 2. Calculate the number of times looping is required after accounting for batched calls.
     total_chunks = (
         total_positions // CHUNK_SIZE + 1
         if total_positions % CHUNK_SIZE > 0
@@ -58,6 +59,7 @@ def get_liquidatable_positions():
     )
     extra_loop_required = total_positions % CHUNK_SIZE > 0
 
+    # 3. Batch calls to get the token IDs of all positions.
     positions = []
     for i in range(total_chunks):
         call = multicall.Call()
@@ -71,6 +73,7 @@ def get_liquidatable_positions():
 
         positions.extend(list(call()))
 
+    # 4. Batch calls to check if the positions are liquidatable.
     liquidation_statuses = []
     for i in range(total_chunks):
         call = multicall.Call()
@@ -84,12 +87,14 @@ def get_liquidatable_positions():
 
         liquidation_statuses.extend(list(call()))
 
+    # 5. Filter out the liquidatable positions.
     liquidatable_positions = [
         positions[i]
         for i in range(len(liquidation_statuses))
         if liquidation_statuses[i]
     ]
 
+    logging.info(f"Checked {total_positions} positions")
     logging.info(f"Found {len(liquidatable_positions)} liquidatable positions")
 
-    return liquidatable_positions
+    return liquidatable_positions, total_positions

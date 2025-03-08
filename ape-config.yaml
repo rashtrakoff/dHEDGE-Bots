@@ -3,7 +3,8 @@ plugins:
   - name: alchemy
   - name: base
 
-ethereum:
-  default_network: base
-  base:
+base:
+  mainnet:
     default_provider: alchemy
+  mainnet-fork:
+    default_provider: foundry
