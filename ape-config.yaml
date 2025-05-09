@@ -2,8 +2,22 @@ name: dHEDGE-Bots
 plugins:
   - name: alchemy
   - name: base
+  - name: optimism
+  - name: arbitrum
 
 base:
+  mainnet:
+    default_provider: alchemy
+  mainnet-fork:
+    default_provider: foundry
+
+optimism:
+  mainnet:
+    default_provider: alchemy
+  mainnet-fork:
+    default_provider: foundry
+
+arbitrum:
   mainnet:
     default_provider: alchemy
   mainnet-fork:

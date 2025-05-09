@@ -4,5 +4,7 @@ slack_sdk
 setuptools
 ape-base
 ape-alchemy
+ape-optimism
+ape-arbitrum
 python-dotenv
-
+etherscan

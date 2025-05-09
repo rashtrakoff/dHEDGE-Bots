@@ -9,20 +9,38 @@ from ape.types import ContractLog
 from silverback import SilverbackBot, StateSnapshot
 from slack_sdk import WebClient
 
+# Replace command-line arguments with environment variables
+VIEWER_CONTRACT_ADDRESS = os.getenv("VIEWER_ADDRESS")
+VAULT_CONTRACT_ADDRESS = os.getenv("VAULT_ADDRESS")
+NETWORK_CHOICE = os.getenv("NETWORK")
+MARKET_NAME = os.getenv("MARKET_NAME")
+
+# Validate the provided environment variables
+if not VIEWER_CONTRACT_ADDRESS or not VIEWER_CONTRACT_ADDRESS.startswith("0x") or len(VIEWER_CONTRACT_ADDRESS) != 42:
+    raise ValueError("Invalid Viewer contract address")
+if not VAULT_CONTRACT_ADDRESS or not VAULT_CONTRACT_ADDRESS.startswith("0x") or len(VAULT_CONTRACT_ADDRESS) != 42:
+    raise ValueError("Invalid Vault contract address")
+if not NETWORK_CHOICE:
+    raise ValueError("Network is required")
+if not MARKET_NAME:
+    raise ValueError("Market name is required")
+
+# Initialize contracts dynamically
+with networks.parse_network_choice(NETWORK_CHOICE) as provider:
+    VIEWER_CONTRACT = Contract(VIEWER_CONTRACT_ADDRESS, abi="abi/Viewer-v1.json")
+    VAULT_CONTRACT = Contract(VAULT_CONTRACT_ADDRESS, abi="abi/FlatcoinVault-v1.json")
+
 # Initialize the bot
 bot = SilverbackBot()
+
+# Log the market name
+logging.info(f"Market Name: {MARKET_NAME}")
 
 # Global variables
 SLACK_CHANNEL = os.getenv("FM_BOT_SLACK_CHANNEL")
 WARNING_THRESHOLD = 5  # 5% skew difference
 CRITICAL_THRESHOLD = 10  # 10% skew difference
 STEP_SIZE = 1  # 1% skew difference
-VIEWER_CONTRACT_ADDRESS = (
-    "0x6928347462F0a9eA96bD5eDc6DaCCE3F8a44d147"  # Viewer contract address on Base
-)
-VAULT_CONTRACT_ADDRESS = (
-    "0x95Fa1ddc9a78273f795e67AbE8f1Cd2Cd39831fF"  # Vault contract address on Base
-)
 THRESHOLD_EMOJI = {
     "normal": ":large_green_circle:",
     "warning": ":large_yellow_circle:",
@@ -32,10 +50,6 @@ DIRECTION_EMOJI = {
     "increased": ":arrow_up:",
     "decreased": ":arrow_down:",
 }
-
-with networks.parse_network_choice("base:mainnet:alchemy") as provider:
-    VIEWER_CONTRACT = Contract(VIEWER_CONTRACT_ADDRESS, abi="abi/Viewer.json")
-    VAULT_CONTRACT = Contract(VAULT_CONTRACT_ADDRESS, abi="abi/FlatcoinVault.json")
 
 
 @bot.on_startup()
@@ -85,8 +99,8 @@ def on_funding_fees_settled(log: ContractLog):
         skew_bias = "long" if current_skew_percent < 0 else "short"
 
         # 3.1 Determine the current skew status and send a slack message accordingly.
-        message = f"{THRESHOLD_EMOJI[range]} {DIRECTION_EMOJI[direction]} Market skew at {current_skew_percent:.2f} {skew_bias}%"
-        logging.info(f"Current skew: {current_skew_percent}%")
+        message = f"{THRESHOLD_EMOJI[range]} {DIRECTION_EMOJI[direction]} [{MARKET_NAME}] Market skew at {current_skew_percent:.2f} {skew_bias}%"
+        logging.info(f"[{MARKET_NAME}] Current skew: {current_skew_percent}%")
 
         # 3.2 Update the skew in the bot state only when skew percentage has changed
         #    beyond a certain threshold.

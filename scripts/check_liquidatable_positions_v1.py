@@ -1,5 +1,6 @@
 import os
 import logging
+import argparse
 from datetime import datetime
 from dotenv import load_dotenv
 
@@ -15,25 +16,40 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 
+# Parse command-line arguments
+parser = argparse.ArgumentParser(description="Check liquidatable positions for a specific market.")
+parser.add_argument("--leverage-module-address", type=str, required=True, help="Leverage module contract address")
+parser.add_argument("--liquidation-module-address", type=str, required=True, help="Liquidation module contract address")
+parser.add_argument("--market-name", type=str, required=True, help="Market name")
+args = parser.parse_args()
+
+# Assign arguments to variables
+LEVERAGE_MODULE_ADDRESS = args.leverage_module_address
+LIQUIDATION_MODULE_ADDRESS = args.liquidation_module_address
+MARKET_NAME = args.market_name
+
+# Validate the provided addresses
+if not LEVERAGE_MODULE_ADDRESS.startswith("0x") or len(LEVERAGE_MODULE_ADDRESS) != 42:
+    raise ValueError("Invalid Leverage module address")
+if not LIQUIDATION_MODULE_ADDRESS.startswith("0x") or len(LIQUIDATION_MODULE_ADDRESS) != 42:
+    raise ValueError("Invalid Liquidation module address")
+
 # Global variables
 SLACK_CHANNEL = os.getenv("FM_BOT_SLACK_CHANNEL")
 CHUNK_SIZE = 10  # Number of positions to check at a time
-LEVERAGE_MODULE_ADDRESS = "0xdB0Cd65dcc7fE07003cE1201f91E1F966fA95768"
-LIQUIDATION_MODULE_ADDRESS = "0x981a29dC987136d23dF5a0f67d86f428Fb40E8Aa"
 SLACK_CLIENT = WebClient(token=os.getenv("SLACK_BOT_TOKEN"))
 
+# Initialize contracts dynamically
 with networks.parse_network_choice("base:mainnet:alchemy") as provider:
-    LEVERAGE_MODULE = Contract(LEVERAGE_MODULE_ADDRESS, abi="abi/LeverageModule.json")
-    LIQUIDATION_MODULE = Contract(
-        LIQUIDATION_MODULE_ADDRESS, abi="abi/LiquidationModule.json"
-    )
+    LEVERAGE_MODULE = Contract(LEVERAGE_MODULE_ADDRESS, abi="abi/LeverageModule-v1.json")
+    LIQUIDATION_MODULE = Contract(LIQUIDATION_MODULE_ADDRESS, abi="abi/LiquidationModule-v1.json")
 
 
 # Main script
 def main():
     positions, total_positions = get_liquidatable_positions()
 
-    text = f"Checked {total_positions} positions and found {len(positions)} liquidatable positions"
+    text = f"[{MARKET_NAME}] Checked {total_positions} positions and found {len(positions)} liquidatable positions"
     formatted_positions = " ".join(map(str, positions))
 
     if len(positions) > 0:
@@ -44,7 +60,7 @@ def main():
 
 def get_liquidatable_positions():
     logging.info(
-        f"Checking liquidatable positions at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        f"[{MARKET_NAME}] Checking liquidatable positions at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
     )
 
     # 1. Get the total number of positions.
@@ -94,7 +110,7 @@ def get_liquidatable_positions():
         if liquidation_statuses[i]
     ]
 
-    logging.info(f"Checked {total_positions} positions")
-    logging.info(f"Found {len(liquidatable_positions)} liquidatable positions")
+    logging.info(f"[{MARKET_NAME}] Checked {total_positions} positions")
+    logging.info(f"[{MARKET_NAME}] Found {len(liquidatable_positions)} liquidatable positions")
 
     return liquidatable_positions, total_positions

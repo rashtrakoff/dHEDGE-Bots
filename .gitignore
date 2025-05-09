@@ -3,3 +3,4 @@
 __pycache__
 .silverback-sessions
 logs
+node_modules
