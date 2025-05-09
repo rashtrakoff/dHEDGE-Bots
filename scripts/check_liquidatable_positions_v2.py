@@ -1,6 +1,5 @@
 import os
 import logging
-import argparse
 from datetime import datetime
 from dotenv import load_dotenv
 
@@ -8,6 +7,7 @@ from ape import Contract, chain, networks
 from ape.types import ContractLog
 from ape_ethereum import multicall
 from slack_sdk import WebClient
+import click
 
 # Configure logging
 logging.basicConfig(
@@ -16,37 +16,38 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 
-# Parse command-line arguments
-parser = argparse.ArgumentParser(description="Check liquidatable positions for a specific market.")
-parser.add_argument("--leverage-module-address", type=str, required=True, help="Leverage module contract address")
-parser.add_argument("--liquidation-module-address", type=str, required=True, help="Liquidation module contract address")
-parser.add_argument("--market-name", type=str, required=True, help="Market name")
-args = parser.parse_args()
-
-# Assign arguments to variables
-LEVERAGE_MODULE_ADDRESS = args.leverage_module_address
-LIQUIDATION_MODULE_ADDRESS = args.liquidation_module_address
-MARKET_NAME = args.market_name
-
-# Validate the provided addresses
-if not LEVERAGE_MODULE_ADDRESS.startswith("0x") or len(LEVERAGE_MODULE_ADDRESS) != 42:
-    raise ValueError("Invalid Leverage module address")
-if not LIQUIDATION_MODULE_ADDRESS.startswith("0x") or len(LIQUIDATION_MODULE_ADDRESS) != 42:
-    raise ValueError("Invalid Liquidation module address")
-
 # Global variables
 SLACK_CHANNEL = os.getenv("FM_BOT_SLACK_CHANNEL")
 CHUNK_SIZE = 10  # Number of positions to check at a time
 SLACK_CLIENT = WebClient(token=os.getenv("SLACK_BOT_TOKEN"))
 
-# Initialize contracts dynamically
-with networks.parse_network_choice("base:mainnet:alchemy") as provider:
-    LEVERAGE_MODULE = Contract(LEVERAGE_MODULE_ADDRESS, abi="abi/LeverageModule-v2.json")
-    LIQUIDATION_MODULE = Contract(LIQUIDATION_MODULE_ADDRESS, abi="abi/LiquidationModule-v2.json")
+# Define the CLI using click
+@click.command()
+@click.option('--leverage-module-address', type=str, required=True, help='Leverage module contract address')
+@click.option('--liquidation-module-address', type=str, required=True, help='Liquidation module contract address')
+@click.option('--network-choice', type=str, required=True, help='Network choice (e.g., base:mainnet:alchemy)')
+@click.option('--market-name', type=str, required=True, help='Market name')
+def main(leverage_module_address, liquidation_module_address, network_choice, market_name):
+    # Assign arguments to variables
+    global LEVERAGE_MODULE_ADDRESS, LIQUIDATION_MODULE_ADDRESS, NETWORK_CHOICE, MARKET_NAME
+    LEVERAGE_MODULE_ADDRESS = leverage_module_address
+    LIQUIDATION_MODULE_ADDRESS = liquidation_module_address
+    NETWORK_CHOICE = network_choice
+    MARKET_NAME = market_name
 
+    # Validate the provided addresses
+    if not LEVERAGE_MODULE_ADDRESS.startswith("0x") or len(LEVERAGE_MODULE_ADDRESS) != 42:
+        raise ValueError("Invalid Leverage module address")
+    if not LIQUIDATION_MODULE_ADDRESS.startswith("0x") or len(LIQUIDATION_MODULE_ADDRESS) != 42:
+        raise ValueError("Invalid Liquidation module address")
 
-# Main script
-def main():
+    # Initialize contracts dynamically
+    with networks.parse_network_choice(NETWORK_CHOICE) as provider:
+        global LEVERAGE_MODULE, LIQUIDATION_MODULE
+        LEVERAGE_MODULE = Contract(LEVERAGE_MODULE_ADDRESS, abi="abi/LeverageModule-v2.json")
+        LIQUIDATION_MODULE = Contract(LIQUIDATION_MODULE_ADDRESS, abi="abi/LiquidationModule-v2.json")
+
+    # Execute the main logic
     positions, total_positions = get_liquidatable_positions()
 
     text = f"[{MARKET_NAME}] Checked {total_positions} positions and found {len(positions)} liquidatable positions"
@@ -114,3 +115,8 @@ def get_liquidatable_positions():
     logging.info(f"[{MARKET_NAME}] Found {len(liquidatable_positions)} liquidatable positions")
 
     return liquidatable_positions, total_positions
+
+
+# Main script entry point
+if __name__ == "__main__":
+    main()
