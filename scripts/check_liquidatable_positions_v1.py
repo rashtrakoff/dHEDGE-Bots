@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from ape import Contract, chain, networks
 from ape.types import ContractLog
 from ape_ethereum import multicall
+from ape.cli import ConnectedProviderCommand
 from slack_sdk import WebClient
 import click
 
@@ -22,17 +23,15 @@ CHUNK_SIZE = 10  # Number of positions to check at a time
 SLACK_CLIENT = WebClient(token=os.getenv("SLACK_BOT_TOKEN"))
 
 # Define the CLI using click
-@click.command()
+@click.command(cls=ConnectedProviderCommand)
 @click.option('--leverage-module-address', type=str, required=True, help='Leverage module contract address')
 @click.option('--liquidation-module-address', type=str, required=True, help='Liquidation module contract address')
-@click.option('--network-choice', type=str, required=True, help='Network choice (e.g., base:mainnet:alchemy)')
 @click.option('--market-name', type=str, required=True, help='Market name')
-def main(leverage_module_address, liquidation_module_address, network_choice, market_name):
+def cli(leverage_module_address, liquidation_module_address, market_name):
     # Assign arguments to variables
-    global LEVERAGE_MODULE_ADDRESS, LIQUIDATION_MODULE_ADDRESS, NETWORK_CHOICE, MARKET_NAME
+    global LEVERAGE_MODULE_ADDRESS, LIQUIDATION_MODULE_ADDRESS, MARKET_NAME
     LEVERAGE_MODULE_ADDRESS = leverage_module_address
     LIQUIDATION_MODULE_ADDRESS = liquidation_module_address
-    NETWORK_CHOICE = network_choice
     MARKET_NAME = market_name
 
     # Validate the provided addresses
@@ -41,11 +40,9 @@ def main(leverage_module_address, liquidation_module_address, network_choice, ma
     if not LIQUIDATION_MODULE_ADDRESS.startswith("0x") or len(LIQUIDATION_MODULE_ADDRESS) != 42:
         raise ValueError("Invalid Liquidation module address")
 
-    # Initialize contracts dynamically
-    with networks.parse_network_choice(NETWORK_CHOICE) as provider:
-        global LEVERAGE_MODULE, LIQUIDATION_MODULE
-        LEVERAGE_MODULE = Contract(LEVERAGE_MODULE_ADDRESS, abi="abi/LeverageModule-v1.json")
-        LIQUIDATION_MODULE = Contract(LIQUIDATION_MODULE_ADDRESS, abi="abi/LiquidationModule-v1.json")
+    global LEVERAGE_MODULE, LIQUIDATION_MODULE
+    LEVERAGE_MODULE = Contract(LEVERAGE_MODULE_ADDRESS, abi="abi/LeverageModule-v1.json")
+    LIQUIDATION_MODULE = Contract(LIQUIDATION_MODULE_ADDRESS, abi="abi/LiquidationModule-v1.json")
 
     # Execute the main logic
     positions, total_positions = get_liquidatable_positions()
@@ -117,5 +114,5 @@ def get_liquidatable_positions():
     return liquidatable_positions, total_positions
 
 # Main script entry point
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()

@@ -12,7 +12,6 @@ from slack_sdk import WebClient
 # Replace command-line arguments with environment variables
 VIEWER_CONTRACT_ADDRESS = os.getenv("VIEWER_ADDRESS")
 VAULT_CONTRACT_ADDRESS = os.getenv("VAULT_ADDRESS")
-NETWORK_CHOICE = os.getenv("NETWORK")
 MARKET_NAME = os.getenv("MARKET_NAME")
 
 # Validate the provided environment variables
@@ -20,18 +19,14 @@ if not VIEWER_CONTRACT_ADDRESS or not VIEWER_CONTRACT_ADDRESS.startswith("0x") o
     raise ValueError("Invalid Viewer contract address")
 if not VAULT_CONTRACT_ADDRESS or not VAULT_CONTRACT_ADDRESS.startswith("0x") or len(VAULT_CONTRACT_ADDRESS) != 42:
     raise ValueError("Invalid Vault contract address")
-if not NETWORK_CHOICE:
-    raise ValueError("Network is required")
 if not MARKET_NAME:
     raise ValueError("Market name is required")
 
-# Initialize contracts dynamically
-with networks.parse_network_choice(NETWORK_CHOICE) as provider:
-    VIEWER_CONTRACT = Contract(VIEWER_CONTRACT_ADDRESS, abi="abi/Viewer-v1.json")
-    VAULT_CONTRACT = Contract(VAULT_CONTRACT_ADDRESS, abi="abi/FlatcoinVault-v1.json")
-
 # Initialize the bot
 bot = SilverbackBot()
+
+VIEWER_CONTRACT = Contract(VIEWER_CONTRACT_ADDRESS, abi="abi/Viewer-v1.json")
+VAULT_CONTRACT = Contract(VAULT_CONTRACT_ADDRESS, abi="abi/FlatcoinVault-v1.json")
 
 # Log the market name
 logging.info(f"Market Name: {MARKET_NAME}")
