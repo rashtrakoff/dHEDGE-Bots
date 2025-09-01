@@ -12,7 +12,7 @@ module.exports = {
                     "0x95Fa1ddc9a78273f795e67AbE8f1Cd2Cd39831fF",
                 MARKET_NAME: "Base-rETH-PERP",
                 SLACK_BOT_TOKEN: process.env.SLACK_BOT_TOKEN,
-                WEB3_BASE_MAINNET_ALCHEMY_PROJECT_ID: process.env.WEB3_BASE_MAINNET_ALCHEMY_PROJECT_ID,
+                WEB3_ALCHEMY_API_KEY: process.env.WEB3_ALCHEMY_API_KEY,
             },
             interpreter: "none", // Use "none" to run the command directly
             watch: false,
@@ -28,7 +28,7 @@ module.exports = {
                     "0x59525b9b23ADc475EF91d98dAe06B568BA574Ce5",
                 MARKET_NAME: "OP-WBTC-PERP",
                 SLACK_BOT_TOKEN: process.env.SLACK_BOT_TOKEN,
-                WEB3_OPTIMISM_MAINNET_ALCHEMY_PROJECT_ID: process.env.WEB3_OPTIMISM_MAINNET_ALCHEMY_PROJECT_ID,
+                WEB3_ALCHEMY_API_KEY: process.env.WEB3_ALCHEMY_API_KEY,
             },
             interpreter: "none", // Use "none" to run the command directly
             watch: false,
@@ -44,7 +44,7 @@ module.exports = {
                     "0x3c4472d7D0F17A7e9158595b4e91Fb673BF44C8c",
                 MARKET_NAME: "Arb-WBTC-OPT",
                 SLACK_BOT_TOKEN: process.env.SLACK_BOT_TOKEN,
-                WEB3_ARBITRUM_MAINNET_ALCHEMY_PROJECT_ID: process.env.WEB3_ARBITRUM_MAINNET_ALCHEMY_PROJECT_ID,
+                WEB3_ALCHEMY_API_KEY: process.env.WEB3_ALCHEMY_API_KEY,
             },
             interpreter: "none", // Use "none" to run the command directly
             watch: false,
